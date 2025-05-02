@@ -13,6 +13,11 @@ import Search from '@/components/Search/Search';
 import Entypo from '@expo/vector-icons/Entypo';
 import SearchFilter from '@/components/Search/SearchFilter';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { getAllCourses, getMyCourses } from '@/api/courseApi';
+import { GetAllTopics } from '@/api/topicApi';
+import { deleteSearchHistoryByContent, getMySearchHistories } from '@/api/searchHistoriesApi';
+import { CourseOverview } from '@/types/course';
+import { CourseItemProps } from '@/components/Course/CourseItem';
 // import { REACT_APP_API_BASE_URL } from '';
 
 const HomePage = () => {
@@ -28,14 +33,17 @@ const HomePage = () => {
     // state display search filter
     const [displaySearchFilter, setDisplaySearchFilter] = useState(false);
 
-    const [dummyRecentSearches, setDummyRecentSearches] = useState([
-      "Math 11", 
-      "Physics 12",
-      "Literature 10", 
-      "React Native Programming", 
-      "Deep Learning",
-      "Spring Boot"
-    ]);
+    // courseJoined
+    const [coursesJoined, setCoursesJoined] = useState([]);
+
+    // all courses
+    const [allCourses, setAllCourses] = useState<CourseItemProps[]>([]);
+
+    // searching topic
+    const [searchingTopics, setSearchingTopics] = useState([]);
+
+    // recent search
+    const [recentSearches, setRecentSearches] = useState([]);
 
     const handleOnClick = () => {
       const request = {
@@ -54,65 +62,39 @@ const HomePage = () => {
       if (authState?.accessToken) {
         setText(authState.accessToken);
       }
-    }, [authState]);
+      getMyCourses().then((response) => {
+        setCoursesJoined(response.data);
+      })
+      GetAllTopics().then((response) => {
+        setSearchingTopics(response.data);
+      })
+      getMySearchHistories().then((response) => {
+        setRecentSearches(response.data);
+      })
+    }, [authState, recentSearches]);
 
-    const images: Record<string, any> = {
-        math: require("../../assets/images/testCourse1.jpg"), 
-        english: require("../../assets/images/testCourse1.jpg")
-    }
-
-    const dummyDataCourses: { courseName: string; urlKey: string }[] = [
-        {
-            "courseName": "Math 12", 
-            "urlKey": "math"
-        }, 
-        {
-            "courseName": "English 10",
-            "urlKey": "english"
-        }, 
-        {
-          "courseName": "Physics 12",
-          "urlKey": "english"
-      },
-    ]
-
-    const dummySuggestedCourses: {courseName: string, instructorName: string, urlKey: keyof typeof images}[] = 
-    [
-      {
-        "courseName": "Algebra 1",
-        "instructorName": "Nguyen Duc Anh",
-        "urlKey": "math"
-      }, 
-      {
-        "courseName": "Algebra 2",
-        "instructorName": "Nguyen Duc Anh",
-        "urlKey": "math"
-      },
-      {
-        "courseName": "Python Programming",
-        "instructorName": "Nguyen Duc Anh",
-        "urlKey": "math"
-      },
-      {
-        "courseName": "Computer Vision",
-        "instructorName": "Nguyen Duc Anh",
-        "urlKey": "math"
-      },
-      {
-        "courseName": "Machine Learning",
-        "instructorName": "Nguyen Duc Anh",
-        "urlKey": "math"
-      },
-    ]
-
-    // set dummy recentsearch
-    const setupDummyRecentSearches = (newRecentSearches: string[]) => {
-        setDummyRecentSearches(newRecentSearches);
-    }
+    useEffect(() => {
+      getMyCourses().then((res) => {
+          const mappedCourses: CourseItemProps[] = res.data.map((course: any) => ({
+              id: course.id,
+              imgUrl: course.thumbnail,
+              courseName: course.title,
+              instructorName: course.instructor,
+          }));
+          setAllCourses(mappedCourses);
+      }).catch((err) => {
+          console.log(err);
+      });
+    }, [])
 
     // disable search filter
     const disableSearchFilter = () => {
       setDisplaySearchFilter(false);
+    }
+
+    // delete search history
+    const deleteSearchHistory = (content: any) => {
+      deleteSearchHistoryByContent(content);
     }
 
   return (
@@ -124,26 +106,25 @@ const HomePage = () => {
               <Text className = "text-3xl font-bold">Nguyen Van A</Text>
             </View> : 
             <Pressable onPress={() => setDisplaySearch(false)}>
-              <Entypo name = "chevron-left" size = {40} className = "relative left-[1%] top-[0.5rem]" />
+              <Entypo name = "chevron-left" size = {40} className = "relative left-[1%] top-[0.5rem] mt-[1rem]" />
             </Pressable>
         }
         
         {/* search bar and sort */}
-        <View className = "flex-row w-full justify-between gap-3 px-4">
+        <View className = "flex-row w-full justify-between gap-3 px-4 mt-[1rem]">
             {/* search bar */}
-            <Pressable className = "flex-row gap-3 p-3 h-max bg-gray-300 rounded-full w-5/6 z-[10]" onPress={() => setDisplaySearch(true)}>
-                <EvilIcon name = "search" size = {30} className = "" />
+            <Pressable className = "flex-row gap-3 bg-gray-300 rounded-full w-5/6 z-[10] h-[4rem]" onPress={() => setDisplaySearch(true)}>
+                <EvilIcon name = "search" size = {30} className = "absolute left-[1rem] top-[1.2rem] z-[10]" />
                 <TextInput
                     placeholder = "Find courses here"
-                    className = "bg-gray-300 rounded-full py-3 pl-3"
-                    onFocus={() => setDisplaySearch(true)}
+                    className = "bg-gray-300 rounded-full pl-[4rem]"
                     editable = {displaySearch === false ? false : true}
                     placeholderTextColor={"black"}
                     onPress={() => setDisplaySearch(true)}
                 />
             </Pressable>
             {/* filter  */}
-            <Pressable className = "flex items-center justify-center p-3 bg-gray-300 rounded-full w-max h-max z-[10] mt-[1.2rem]" onPress={() => setDisplaySearchFilter(true)}>
+            <Pressable className = "flex items-center justify-center p-3 bg-gray-300 rounded-full z-[10] mt-[1.2rem] relative bottom-[0.7rem]" onPress={() => setDisplaySearchFilter(true)}>
               <AntDesign name='filter' size={24}/>
             </Pressable>
         </View>
@@ -151,30 +132,29 @@ const HomePage = () => {
         {/* Course joined */}
         {displaySearch === false && 
             <CourseJoined 
-              dummyDataCourses={dummyDataCourses}
-              images={images}
+              courseJoined={coursesJoined}
             />
         }
 
         {/* suggested course */}
         {displaySearch === false && 
             <SuggestedCourse 
-              dummySuggestedCourses={dummySuggestedCourses}
-              images={images}
+                courses={allCourses}
             />
         }
 
         {/* search */}
         {displaySearch === true && 
             <Search 
-                dummyRecentSearches={dummyRecentSearches}
-                setupDummyRecentSearches={setupDummyRecentSearches}
+                searchingTopics={searchingTopics}
+                recentSearches={recentSearches}
+                deleteSearchHistory={deleteSearchHistory}
             />
         }
 
         {/* search filter */}
         {displaySearchFilter === true && 
-            <View className = "absolute left-0 bottom-16 z-[50]">
+            <View className = "absolute left-0 bottom-[2rem] z-[50]">
               <SearchFilter 
                   disableSearchFilter={disableSearchFilter}
               />

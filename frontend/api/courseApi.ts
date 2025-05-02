@@ -14,3 +14,7 @@ export function getCourseOverview(courseId: string) {
 export function createCourse(request: CreateCourseRequest) {
     return api.post(`${URL_PREFIX}`, request);
 }
+
+export function getAllCourses() {
+    return api.get(`${URL_PREFIX}/`);
+}

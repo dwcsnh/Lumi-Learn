@@ -2,19 +2,15 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import React from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import CourseList from '../Course/CourseList';
+import { CourseItemProps } from '../Course/CourseItem';
 
 interface SuggestedCourses {
-    dummySuggestedCourses: Course[],
-    images: Record<string, any>
+    courses: CourseItemProps[]
 }
 
-type Course = {
-    courseName: string;
-    instructorName: string;
-    urlKey: string;
-}
 
-const SuggestedCourse = ({dummySuggestedCourses, images}: SuggestedCourses) => {
+const SuggestedCourse = ({courses}: SuggestedCourses) => {
   return (
     <View className = "mt-[3rem] h-full flex-1"> 
         {/* title */}
@@ -43,26 +39,15 @@ const SuggestedCourse = ({dummySuggestedCourses, images}: SuggestedCourses) => {
 
         {/* courses */}
         <ScrollView
-            className = "relative left-[3%] h-full mt-[1rem]"
+            className = "h-full mt-[1rem]"
             showsVerticalScrollIndicator = {false}
             horizontal={false}
             contentContainerStyle={{ paddingBottom: 20, paddingTop: 10}}
         >
             <View className = "flex-col gap-5 pt-[1rem]">
-                {dummySuggestedCourses.map((course, index) => {
-                    return (
-                        <View className = "w-[94%] h-[6rem] rounded-lg flex-row gap-12" key = {index} style = {{boxShadow: "4px 4px 6px rgba(0,0,0,0.1)"}}>
-                            <Image source = {images[course.urlKey]} className = "w-[4.1rem] h-[4.1rem] relative top-[1rem] left-[1.5rem] rounded-lg" />
-                            <View className = "relative top-[1rem] flex-col gap-[0.8rem]">
-                                <Text className = "text-xl font-bold">{course.courseName}</Text>
-                                <View className = "flex-row gap-3">
-                                    <FontAwesome name = "user" size = {20} />
-                                    <Text className = "text-lg relative bottom-[0.2rem]">{course.instructorName}</Text>
-                                </View>
-                            </View>
-                        </View>
-                    )
-                })}
+                <CourseList 
+                    courses={courses}
+                />
             </View>
         </ScrollView>
 </View>
