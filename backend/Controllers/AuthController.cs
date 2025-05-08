@@ -130,7 +130,7 @@ namespace LumiLearn.Controllers
                 //new Claim(JwtRegisteredClaimNames.Sub, user.Username), // Owner
                 //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // JWT Id
                 new Claim(ClaimTypes.Role, user.Role.Name),
-                new Claim(ClaimTypes.Name, user.Username), // Throw away some day, just need NameIdentifier to store Id
+                new Claim(ClaimTypes.Name, user.Username), // Now we use it haha
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) // User Id
             };
 

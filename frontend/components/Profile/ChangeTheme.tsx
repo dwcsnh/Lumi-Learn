@@ -12,8 +12,8 @@ const ChangeTheme = ({setupDisplayChangeTheme}: ChangeThemeProps) => {
   return (
     <View className = "bg-white w-[100vw] h-[30vh] rounded-tl-2xl rounded-tr-2xl">
         {/* close icon */}
-        <Pressable className = "absolute left-2 top-4">
-            <AntDesign name = "close" size = {32} className = "" onPress = {() => setupDisplayChangeTheme(false)}/>
+        <Pressable className = "absolute left-2 top-4 z-[10]" onPress = {() => setupDisplayChangeTheme(false)}>
+            <AntDesign name = "close" size = {32} className = ""/>
         </Pressable>
         {/* title */}
         <Text className = "text-2xl font-bold text-center mt-[1.2rem]">Theme</Text>

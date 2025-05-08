@@ -1,11 +1,15 @@
 import { View, Text, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import MainProfile from '@/components/Profile/MainProfile';
 import UserInformation from '@/components/Profile/UserInformation';
 import ChangePassword from '@/components/Profile/ChangePassword';
 import ChangeTheme from '@/components/Profile/ChangeTheme';
 import Policy from '@/components/Profile/Policy';
 import Helps from '@/components/Profile/Helps';
+import { User } from '@/types/user';
+import { changePasswordApi, getUserProfile } from '@/api/userApi';
+import useAuthStore from '@/zustand/authStore';
+import { router } from 'expo-router';
 
 const ProfilePage = () => {
   const [displayInformation, setDisplayInformation] = useState(false);
@@ -13,6 +17,27 @@ const ProfilePage = () => {
   const [displayChangeTheme, setDisplayChangeTheme] = useState(false);
   const [displayPolicy, setDisplayPolicy] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
+
+  // zustand auth state and logout
+  const authState = useAuthStore((state) => state.authState);
+  const logOutAuthState = useAuthStore((state) => state.logOut);
+
+  // user profile
+  const [userProfile, setUserProfile] = useState<User>({
+    id: '',
+    username: '',
+    name: '',
+    email: '',
+    phone: '',
+    birthday: new Date(),
+    role: '',
+  });
+
+  useEffect(() => {
+    getUserProfile().then((response) => {
+        setUserProfile(response.data);
+    })
+  }, [])
 
   const setupDisplayInformation = (display: boolean) => {
     setDisplayInformation(display);
@@ -33,6 +58,16 @@ const ProfilePage = () => {
   const setupDisplayHelp = (display: boolean) => {
     setDisplayHelp(display);
   }
+
+  // logout
+  const handleLogOut = () => {
+      try {
+        logOutAuthState();
+      } catch(err) {
+        console.error(err);
+      }
+      router.push('/(auth)/login');
+  }
   return (
     <View>
       <View>
@@ -44,6 +79,7 @@ const ProfilePage = () => {
               setupDisplayChangeTheme={setupDisplayChangeTheme}
               setupDisplayPolicy={setupDisplayPolicy}
               setupDisplayHelp={setupDisplayHelp}
+              handleLogOut={handleLogOut}
             />
           </View>
         }
@@ -51,6 +87,7 @@ const ProfilePage = () => {
         {displayInformation === true && 
           <UserInformation 
               setupDisplayInformation={setupDisplayInformation}
+              userProfile={userProfile}
           />
         }
 

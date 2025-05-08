@@ -35,9 +35,9 @@ export const PillSelection: React.FC<PillGroupProps> = ({
 
     return (
         <Container
-        className={wrap ? 'flex-row flex-wrap' : 'flex-row'}
-        horizontal={!wrap}
-        showsHorizontalScrollIndicator={false}
+            className={wrap ? 'flex-row flex-wrap' : 'flex-row'}
+            horizontal={!wrap}
+            showsHorizontalScrollIndicator={false}
         >
         {values.map((val) => (
             <Pill

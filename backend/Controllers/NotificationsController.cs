@@ -19,8 +19,6 @@ namespace LumiLearn.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Student")]
-        // How about Teacher ?? What is notification of Teacher ???
         public async Task<IActionResult> GetMyNotifications()
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -35,6 +33,7 @@ namespace LumiLearn.Controllers
                     Type = nu.Notification.Type,
                     IsRead = nu.IsRead,
                     CreatedAt = nu.Notification.CreatedAt,
+                    Thumbnail = nu.Notification.Thumbnail,
                 })
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();

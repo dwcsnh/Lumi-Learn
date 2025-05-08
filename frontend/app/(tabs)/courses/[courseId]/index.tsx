@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, Pressable, ScrollView, TouchableOpacity, Image } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { getCourseOverview } from '@/api/courseApi';
@@ -44,7 +44,7 @@ const CourseOverviewPage = () => {
             >
                 <Pressable
                     onPress={() => { 
-                        router.push('/(tabs)/courses');
+                        router.push(`/(tabs)/courses`);
                     }}
                 >
                     <AntDesign name='arrowleft' size={24}/>
@@ -60,7 +60,7 @@ const CourseOverviewPage = () => {
                 >
                     <Text
                         id='course-name'
-                        className='text-3xl font-bold'
+                        className='text-2xl font-bold'
                     >
                         {courseOverview?.title}
                     </Text>
@@ -72,11 +72,14 @@ const CourseOverviewPage = () => {
                     </Text>
                 </View>
                 {/* Replace with course thumbnail later */}
-                <View
+                <Image
                     id='course-thumbnail'
-                    className='w-24 h-24 rounded-lg bg-white'
+                    source={{ uri: courseOverview?.thumbnail as string | undefined }}
+                    width={84}
+                    height={84}
+                    borderRadius={8}
                 >
-                </View>
+                </Image>
             </View>
             <View
                 id='Lesson-list-section'

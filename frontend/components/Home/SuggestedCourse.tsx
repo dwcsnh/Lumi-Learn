@@ -42,9 +42,9 @@ const SuggestedCourse = ({courses}: SuggestedCourses) => {
             className = "h-full mt-[1rem]"
             showsVerticalScrollIndicator = {false}
             horizontal={false}
-            contentContainerStyle={{ paddingBottom: 20, paddingTop: 10}}
+            contentContainerStyle={{ paddingBottom: 35, paddingTop: 10}}
         >
-            <View className = "flex-col gap-5 pt-[1rem]">
+            <View className = "flex-col flex-1 items-center px-6">
                 <CourseList 
                     courses={courses}
                 />

@@ -14,10 +14,10 @@ const api = axios.create({
     timeout: 10000,
 });
 
-export const setupAxios = (authState: AuthState | null) => {
+export const setupAxios = () => {
     api.interceptors.request.use(
         (request: InternalAxiosRequestConfig) => {
-            const accessToken = authState?.accessToken;
+            const accessToken = useAuthStore.getState().authState?.accessToken;
 
             if (accessToken) {
                 request.headers.set("Authorization", `Bearer ${accessToken}`);

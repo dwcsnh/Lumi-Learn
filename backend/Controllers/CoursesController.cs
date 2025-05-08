@@ -18,6 +18,9 @@ using System.Data;
 using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using LumiLearn.Dtos.Quiz;
+using LumiLearn.Services;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Net.Mime;
 
 namespace LumiLearn.Controllers
 {
@@ -27,16 +30,24 @@ namespace LumiLearn.Controllers
     {
         private readonly LumiLearnDbContext dbContext;
         private readonly ISearchHistoriesReposity searchHistoriesReposity;
+        private readonly S3Services s3Services;
 
-        public CoursesController(LumiLearnDbContext lumiLearnDbContext, ISearchHistoriesReposity searchHistoriesReposity)
+        public CoursesController(LumiLearnDbContext lumiLearnDbContext, ISearchHistoriesReposity searchHistoriesReposity, S3Services s3Services)
         {
             dbContext = lumiLearnDbContext;
             this.searchHistoriesReposity = searchHistoriesReposity;
+            this.s3Services = s3Services;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllCourses()
         {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var enrolledCourseIds = await dbContext.Enrollments
+                .Where(e => e.StudentId == userId)
+                .Select(e => e.CourseId)
+                .ToListAsync();
+
             var courses = await dbContext.Courses
                 .Select(c => new CourseDto
                 {
@@ -49,6 +60,7 @@ namespace LumiLearn.Controllers
                     Rating = c.Feedbacks.Any() ? Math.Round(c.Feedbacks.Average(f => f.Rating), 2) : 0,
                     NumberOfRatings = c.Feedbacks.Count,
                     Timestamp = c.Timestamp,
+                    IsUserEnrolled = enrolledCourseIds.Contains(c.Id),
                 })
                 .ToListAsync();
 
@@ -69,6 +81,10 @@ namespace LumiLearn.Controllers
             var topic = await dbContext.Topics.FindAsync(course.TopicId);
             var feedbacks = await dbContext.Feedbacks.Where(f => f.CourseId == id).Select(f => f.Rating).ToListAsync();
             var lessons = await dbContext.Lessons.Where(l => l.CourseId == id).ToListAsync();
+
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var isEnrolledCourse = await dbContext.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == userId && e.CourseId == id);
 
             var lessonsOverview = new List<LessonOverview>();
 
@@ -112,6 +128,7 @@ namespace LumiLearn.Controllers
                 Topic = topic.Name,
                 Rating = feedbacks.Count() > 0 ? Math.Round(feedbacks.Average(), 2) : 0,
                 NumberOfRatings = feedbacks.Count(),
+                IsUserEnrolled = isEnrolledCourse != null,
                 Lessons = lessonsOverview
             };
 
@@ -169,6 +186,7 @@ namespace LumiLearn.Controllers
                         Rating = e.Course.Feedbacks.Any() ? Math.Round(e.Course.Feedbacks.Average(f => f.Rating), 2) : 0,
                         NumberOfRatings = e.Course.Feedbacks.Count,
                         Timestamp = e.Course.Timestamp,
+                        IsUserEnrolled = true,
                     })
                     .ToListAsync();
 
@@ -189,6 +207,7 @@ namespace LumiLearn.Controllers
                         Rating = c.Feedbacks.Any() ? Math.Round(c.Feedbacks.Average(f => f.Rating), 2) : 0,
                         NumberOfRatings = c.Feedbacks.Count,
                         Timestamp = c.Timestamp,
+                        IsUserEnrolled = true, // This course is belong to this user (teacher)
                     })
                     .ToListAsync();
 
@@ -263,6 +282,12 @@ namespace LumiLearn.Controllers
                 return BadRequest("Search field cannot be null");
             }
 
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var enrolledCourseIds = await dbContext.Enrollments
+                .Where(e => e.StudentId == userId)
+                .Select(e => e.CourseId)
+                .ToListAsync();
+
             var courseDtos = await dbContext.Courses
                 .Where(c => c.Title.ToLower().Contains(keyword.ToLower())) // Handle at frontend
                 .Select(c => new CourseDto
@@ -276,12 +301,11 @@ namespace LumiLearn.Controllers
                     Rating = c.Feedbacks.Any() ? Math.Round(c.Feedbacks.Average(f => f.Rating), 2) : 0,
                     NumberOfRatings = c.Feedbacks.Count,
                     Timestamp = c.Timestamp,
+                    IsUserEnrolled = enrolledCourseIds.Contains(c.Id)
                 })
                 .ToListAsync();
 
             // Add to Search Histories
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
             _ = Task.Run(async () =>
             {
                 await searchHistoriesReposity.CreateSearchHistory(
@@ -297,9 +321,13 @@ namespace LumiLearn.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<ActionResult<CourseDto>> CreateNewCourse(CreateCourseRequest request)
         {
+            if (request.Thumbnail.Length == 0 || request.Thumbnail == null)
+            {
+                return BadRequest(request.Thumbnail.Length);
+            }
             if (request.Topic == null || request.Title == null)
             {
-                return BadRequest("Missing Some Props"); // No need because request required
+                return BadRequest(request); // No need because request required
             }
 
             // Check the Unique InstructorId and Title
@@ -309,11 +337,11 @@ namespace LumiLearn.Controllers
             var existCourse = await dbContext.Courses
                 .AnyAsync(c => c.InstructorId == instructorId && c.Title == request.Title);
 
-            if(existCourse)
+            if (existCourse)
             {
                 return Conflict("You already create course with this title!");
             }
-            
+
             var topic = await dbContext.Topics.FirstOrDefaultAsync(r => r.Name == request.Topic);
 
             if (topic == null)
@@ -326,13 +354,21 @@ namespace LumiLearn.Controllers
                 await dbContext.Topics.AddAsync(topic);
             }
 
+            var newCourseId = Guid.NewGuid();
+            string key = $"course/{newCourseId}";
+
+            using var stream = new MemoryStream();
+            await request.Thumbnail.CopyToAsync(stream);
+            stream.Position = 0;
+            var uploadRespone = await s3Services.UploadFileAsync(stream, key, request.Thumbnail.ContentType);
+
             var course = new Course
             {
-                Id = Guid.NewGuid(),
+                Id = newCourseId,
                 InstructorId = instructorId,
                 Title = request.Title,
                 Description = request.Description,
-                Thumbnail = request.Thumbnail,
+                Thumbnail = uploadRespone.FileURL,
                 TopicId = topic.Id,
                 Timestamp = DateTime.Now,
             };
@@ -362,9 +398,9 @@ namespace LumiLearn.Controllers
         [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> UpdateCourse(Guid id, UpdateCourseRequest request)
         {
-            if(request.Title == null && 
-               request.Description == null && 
-               request.Thumbnail == null && 
+            if (request.Title == null &&
+               request.Description == null &&
+               request.Thumbnail == null &&
                request.Topic == null)
             {
                 return BadRequest("Nothing to change!"); // Handle at frontend not to call
@@ -398,9 +434,14 @@ namespace LumiLearn.Controllers
                 course.Description = request.Description;
             }
 
-            if (request.Thumbnail != null && request.Thumbnail != course.Thumbnail)
+            string key = $"course/{id}";
+            using var stream = new MemoryStream();
+            await request.Thumbnail.CopyToAsync(stream);
+            var uploadRespone = await s3Services.UploadFileAsync(stream, key, request.Thumbnail.ContentType);
+
+            if (request.Thumbnail != null && uploadRespone.FileURL != course.Thumbnail)
             {
-                course.Thumbnail = request.Thumbnail;
+                course.Thumbnail = uploadRespone.FileURL;
             }
 
             if (request.Topic != null && request.Topic != course.Topic.Name)

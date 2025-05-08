@@ -6,6 +6,6 @@ export function getMySearchHistories() {
     return api.get(`/${URL_PREFIX}/`);
 }
 
-export function deleteSearchHistoryByContent(content:any) {
-    return api.delete(`/${URL_PREFIX}/`, content)
+export function deleteSearchHistoryByContent(content: string) {
+    return api.delete(`/${URL_PREFIX}?content=${content}`)
 }

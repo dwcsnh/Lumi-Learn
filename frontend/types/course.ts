@@ -15,6 +15,6 @@ export type CourseOverview = {
 export type CreateCourseRequest = {
     title: string;
     description: string;
-    thumbnail: string;
+    thumbnail: File | null;
     topic: string;
 }

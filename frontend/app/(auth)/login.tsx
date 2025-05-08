@@ -83,7 +83,9 @@ const login = () => {
                 className='flex flex-col gap-5 w-full color-orange-300'
             >
                 <View id='username-input'>
-                    <Text 
+                      <Text 
+                        accessible={true}
+                        accessibilityLabel="UserName input field"
                         className={usernameError ? 
                             'text-sm ml-1 mb-2 color-red-600'
                             : 'text-sm ml-1 mb-2 color-slate-700'}
@@ -92,6 +94,9 @@ const login = () => {
                     </Text>
                     <TextInput
                         id='username-input-field'
+                        accessible={true}
+                        accessibilityLabel="UserName input field"
+                        accessibilityHint="Double type to start typing"
                         placeholder='Please enter your username'
                         placeholderTextColor={"#9CA3AF"}
                         className={usernameError ? 

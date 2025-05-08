@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, TouchableHighlight } from 'react-native'
+import { View, Text, TouchableOpacity, TouchableHighlight, Image } from 'react-native'
 import React from 'react'
 import { QuizResult } from '@/types/quizResult'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { S3_URL_PREFIX } from '@/const/AmazonS3';
 
 export type QuizResultProps = {
     quizTitle: string;
@@ -17,11 +18,12 @@ const QuizResultScreen: React.FC<QuizResultProps> = ({ quizTitle, quizResult }) 
             id='quiz-result-screen'
             className='flex-1 flex-col items-center justify-center p-6 gap-5 rounded-t-3xl bg-white w-full animate-slideUpToHalf'
         >
-            <View
-                id='congratulation-image'
-                className='w-40 h-40 rounded-2xl bg-gray-100'
-            >
-            </View>
+            <Image
+                source={{ uri: `${S3_URL_PREFIX}/course/${courseId}`}}
+                width={150}
+                height={150}
+                borderRadius={12}
+            />
             <Text className='text-xl font-normal text-black'>
                 You have completed quiz
             </Text>

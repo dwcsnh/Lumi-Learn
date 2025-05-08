@@ -1,6 +1,7 @@
 ﻿using LumiLearn.Data;
 using LumiLearn.Domains;
 using LumiLearn.Dtos.Enrollment;
+using LumiLearn.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace LumiLearn.Controllers
     public class EnrollmentsController : ControllerBase
     {
         private readonly LumiLearnDbContext dbContext;
+        private readonly INotificationRepository notificationRepository;
 
-        public EnrollmentsController(LumiLearnDbContext lumiLearnDbContext)
+        public EnrollmentsController(LumiLearnDbContext lumiLearnDbContext, INotificationRepository notificationRepository)
         {
             dbContext = lumiLearnDbContext;
+            this.notificationRepository = notificationRepository;
         }
 
         [HttpGet]
@@ -35,9 +38,11 @@ namespace LumiLearn.Controllers
             return Ok(enrollments);
         }
 
+        // Student Enroll Course
         [HttpPost]
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> EnrollCourse(EnrollRequest request)
+
         {
             var course = await dbContext.Courses.FirstOrDefaultAsync(c => c.Id == request.CourseId);
 
@@ -47,6 +52,7 @@ namespace LumiLearn.Controllers
             }
 
             var studentId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var studentUserName = User.FindFirst(ClaimTypes.Name)?.Value;
             var isEnrolledCourse = await dbContext.Enrollments
                 .FirstOrDefaultAsync(e => e.CourseId == request.CourseId && e.StudentId == studentId);
 
@@ -69,6 +75,15 @@ namespace LumiLearn.Controllers
                 StudentId = newEnrollment.StudentId,
                 CourseId = newEnrollment.CourseId,
             };
+
+            _ = Task.Run(async () =>
+            {
+                await notificationRepository
+                .SendNotificationToTeacherWhenStudentEnrollCourse(
+                    studentUserName,
+                    course
+                );
+            }).ConfigureAwait(false);
 
             return CreatedAtAction(nameof(GetEnrollmentByCourseId), enrollmentDto);
         }

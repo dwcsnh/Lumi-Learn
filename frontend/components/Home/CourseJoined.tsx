@@ -1,15 +1,11 @@
+import { router } from 'expo-router'
 import React from 'react'
-import { Image, ScrollView, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { CourseItemProps } from '../Course/CourseItem'
 
 
 interface CourseJoinedProps {
-    courseJoined: CourseJoined[],
-}
-
-type CourseJoined = {
-    title: string, 
-    description: string, 
-    thumbnail: string
+    courseJoined: CourseItemProps[],
 }
 
 
@@ -30,10 +26,13 @@ const CourseJoined = ({courseJoined}: CourseJoinedProps) => {
             <View className = "flex-row gap-4">
             {courseJoined.map((course, index) => {
                 return (
-                    <View className = "w-[12rem] border-solid border-gray-300 border-[1px] rounded-lg h-[8rem]" key = {index}>
-                        <Image source={{uri: course.thumbnail}} className = "w-[90%] relative left-[5%] h-[65%] top-[8%] rounded-lg" />
-                        <Text className = "relative left-[6%] top-[12%] font-bold">{course.title.length > 18 ? course.title.substring(0, 18) + "..." : course.title}</Text>
-                    </View>
+                    <Pressable className = "w-[12rem] border-solid border-gray-300 border-[1px] rounded-lg h-[8rem]" key = {index} onPress = {() => {
+                        router.push(`/(tabs)/courses/${course.id}`)
+                    }}>
+                        {/* fake thumbnail */}
+                        <View className = "w-[10rem] h-[5rem] bg-white mt-[0.5rem] ml-[1rem]"></View>
+                        <Text className = "relative left-[1rem] top-[0.5rem] font-bold">{course.courseName?.length > 18 ? course.courseName.substring(0, 18) + "..." : course.courseName}</Text>
+                    </Pressable>
                 )
             })} 
             </View>

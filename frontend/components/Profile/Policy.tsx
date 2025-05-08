@@ -1,13 +1,14 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface PolicyProps {
     setupDisplayPolicy: (display: boolean) => void;
 }
 const Policy = ({setupDisplayPolicy}: PolicyProps) => {
   return (
-    <View className = "mt-[4rem] animate-slideLeftFromRight">
+    <ScrollView className = "mt-[4rem] animate-slideLeftFromRight">
         {/* header */}
         <View className = "w-[100vw] border-solid border-black border-b-[1px] pb-[2rem] mt-[1rem]">
             <Text className = "text-center text-3xl font-bold">Policy</Text>
@@ -30,7 +31,7 @@ const Policy = ({setupDisplayPolicy}: PolicyProps) => {
         <View className = "mt-[1.5rem] relative left-[5%] w-[90%]">
             <Text className = "text-lg">As developers of <Text className = "font-bold">Lumilearn</Text>, we are dedicated to fostering an inclusive learning environment. We see technology as a bridge to opportunity, and we are proud to support the blind and visually impaired community in their pursuit of knowledge, confidence, and success.</Text>
         </View>
-    </View>
+    </ScrollView>
   )
 }
 

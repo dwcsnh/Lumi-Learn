@@ -1,8 +1,10 @@
 ﻿using LumiLearn.Data;
 using LumiLearn.Domains;
 using LumiLearn.Dtos.QuizResult;
+using LumiLearn.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LumiLearn.Controllers
 {
@@ -11,10 +13,12 @@ namespace LumiLearn.Controllers
     public class QuizResultsController : Controller
     {
         private readonly LumiLearnDbContext _context;
+        private readonly INotificationRepository notificationRepository;
 
-        public QuizResultsController(LumiLearnDbContext context)
+        public QuizResultsController(LumiLearnDbContext context, INotificationRepository notificationRepository)
         {
             _context = context;
+            this.notificationRepository = notificationRepository;
         }
 
         // GET: api/quizresults?userId={userId}&quizId={quizId}
@@ -56,6 +60,7 @@ namespace LumiLearn.Controllers
             return Ok(result);
         }
 
+        // Submit Quiz
         [HttpPost]
         public async Task<IActionResult> SubmitQuizResult([FromBody] QuizSubmissionDto submission)
         {
@@ -92,6 +97,18 @@ namespace LumiLearn.Controllers
 
             _context.QuizResult.Add(quizResult);
             await _context.SaveChangesAsync();
+
+            var studentUserName = User.FindFirst(ClaimTypes.Name)?.Value;
+
+            _ = Task.Run(async () =>
+            {
+                await notificationRepository
+                .SendNotificationToTeacherWhenStudentSubmitQuiz(
+                    studentUserName,
+                    quizResult.QuizId,
+                    quizResult.score
+                );
+            }).ConfigureAwait(false);
 
             return Ok(new
             {

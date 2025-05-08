@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: lumilearn
 -- ------------------------------------------------------
--- Server version	8.4.3
+-- Server version	8.0.36
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -35,7 +35,7 @@ CREATE TABLE `topics` (
 
 LOCK TABLES `topics` WRITE;
 /*!40000 ALTER TABLE `topics` DISABLE KEYS */;
-INSERT INTO `topics` VALUES ('2677ba65-0dd0-42bb-853e-0ef3452f543f','Ninjutsu'),('31ed3557-513b-43ef-bed2-2f7b5f088fee','Math'),('417a8839-4c8a-4ff0-b156-e4622de1414a','English'),('66fce7bd-3fa6-4580-9b49-9c0083304456','New'),('751750c8-f581-456c-91d0-3862651a90a1','Nothing'),('8420fc8a-ebac-414a-a384-7dec95bb3fd4','NewTopic'),('da1d84b6-5519-4fdf-b43a-aceb1ecf35c4','Something'),('fc07b4d6-127f-4b2e-ade1-68291ead3732','But Topic Is New to test Patch');
+INSERT INTO `topics` VALUES ('2677ba65-0dd0-42bb-853e-0ef3452f543f','Ninjutsu'),('2718ccdd-cdf6-4855-b8c7-65f6f4dd33b9','Upload'),('31ed3557-513b-43ef-bed2-2f7b5f088fee','Math'),('417a8839-4c8a-4ff0-b156-e4622de1414a','English'),('66fce7bd-3fa6-4580-9b49-9c0083304456','New'),('751750c8-f581-456c-91d0-3862651a90a1','Nothing'),('8420fc8a-ebac-414a-a384-7dec95bb3fd4','NewTopic'),('da1d84b6-5519-4fdf-b43a-aceb1ecf35c4','Something'),('fc07b4d6-127f-4b2e-ade1-68291ead3732','But Topic Is New to test Patch');
 /*!40000 ALTER TABLE `topics` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-02  9:19:50
+-- Dump completed on 2025-05-08 13:53:57

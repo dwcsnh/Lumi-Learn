@@ -6,8 +6,9 @@ import useAuthStore from "@/zustand/authStore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
-  const authState = useAuthStore((state) => state.authState);
-  setupAxios(authState);
+  useEffect(() => {
+    setupAxios();
+  }, []);
 
   return (
     <GestureHandlerRootView>
@@ -15,6 +16,8 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)"
           />
           <Stack.Screen name="(auth)"
+          />
+          <Stack.Screen name = "(other)"
           />
       </Stack>
       {/* {redirectPath ?? <Redirect href={redirectPath}/>} */}

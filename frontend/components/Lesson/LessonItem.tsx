@@ -5,6 +5,7 @@ import { LessonOverview } from '@/types/lesson';
 import MyCourseScreen from '@/app/(tabs)/courses';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import useAuthStore from '@/zustand/authStore';
+import { S3_URL_PREFIX } from '@/const/AmazonS3';
 
 export type LessonItemProps = {
     lesson: LessonOverview,
@@ -38,8 +39,8 @@ const LessonItem = ({ lesson, lessonNumber }: LessonItemProps) => {
     return (
         <View
             id="lesson-item"
-            className={`flex-col px-3 w-full ${isPressed ? 'bg-slate-100' : 'bg-gray-50'} rounded-xl`}
-            style = {{boxShadow: "0px 2px 8px rgba(0,0,0,0.15)"}}
+            className={`flex-col px-3 w-[98%] ${isPressed ? 'bg-slate-100' : 'bg-gray-50'} rounded-xl`}
+            style = {{boxShadow: "0px 4px 6px rgba(0,0,0,0.08)"}}
         >
             <Pressable
                 id="lesson-top"

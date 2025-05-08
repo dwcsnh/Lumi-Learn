@@ -1,5 +1,7 @@
 using LumiLearn.Data;
+using LumiLearn.Dtos.S3;
 using LumiLearn.Repositories;
+using LumiLearn.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,7 +13,9 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.Configure<AwsCredentials>(builder.Configuration.GetSection("AwsCredentials"));
+builder.Services.Configure<S3BucketProperties>(builder.Configuration.GetSection("S3BucketProperties:LumiLearn"));
+builder.Services.AddScoped<S3Services>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
